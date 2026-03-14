@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import { getOverviewStats, getEmployees, getAllAlerts, type Employee } from "@/lib/health-data"
 import { StatCard } from "./stat-card"
+
 import { StatusBadge } from "./status-badge"
 import {
   AreaChart,
@@ -524,6 +525,7 @@ export function DashboardOverview() {
 
       {/* Watch Activity Calendar */}
       <WatchActivityCalendar employees={employees} />
+
 
       {/* Lists row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

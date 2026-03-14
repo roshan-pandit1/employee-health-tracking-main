@@ -29,6 +29,9 @@ import { NotificationPanel } from "./notification-panel"
 import { IntensityAlertPanel } from "./intensity-alert-panel"
 import { HabitTracker } from "./habit-tracker"
 import { NotificationRatingsPanel } from "./notification-ratings-panel"
+import { RatingsContent } from "./ratings-content"
+import { Alert } from "@/components/ui/alert"
+import { AlertTriangle } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   LineChart,
@@ -106,7 +109,19 @@ function VitalCard({
 
 export function EmployeeDetail({ employee }: { employee: Employee }) {
   const suggestions = getSuggestions(employee)
-  const [activeTab, setActiveTab] = useState<"suggestions" | "notifications">("suggestions")
+  const [activeTab, setActiveTab] = useState<"suggestions" | "notifications" | "habits">("suggestions")
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Get logged-in employee id from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const email = localStorage.getItem("userEmail")
+      // Find employee by email
+      if (email && employee.email === email) {
+        setUserId(employee.id)
+      }
+    }
+  }, [employee])
   const trendIcon =
     employee.fatigue.trend === "improving"
       ? TrendingDown
@@ -312,8 +327,12 @@ export function EmployeeDetail({ employee }: { employee: Employee }) {
 
         {/* Suggestions & Notifications panel with Tabs */}
         <div className="space-y-4">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "suggestions" | "notifications")} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
+          {/* DEBUG: Tab rendering indicator */}
+          <div className="p-2 bg-yellow-100 text-yellow-900 rounded text-xs font-mono">
+            Tabs Rendered: activeTab = {activeTab} | userId = {userId} | employee.id = {employee.id} | employee.email = {employee.email}
+          </div>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "suggestions" | "notifications" | "habits")} className="space-y-4">
+            <TabsList className={`grid w-full grid-cols-${userId === employee.id ? 3 : 2}`}>
               <TabsTrigger value="suggestions" className="flex items-center gap-2">
                 <Lightbulb className="h-4 w-4" />
                 Suggestions
@@ -322,7 +341,25 @@ export function EmployeeDetail({ employee }: { employee: Employee }) {
                 <BellRing className="h-4 w-4" />
                 Notifications
               </TabsTrigger>
+              {userId === employee.id && (
+                <TabsTrigger value="habits" className="flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
+                  Habits
+                </TabsTrigger>
+              )}
             </TabsList>
+            {/* Habits Tab - only for logged-in employee */}
+            {userId === employee.id && (
+              <TabsContent value="habits" className="space-y-4">
+                <div className="rounded-xl border border-[hsl(var(--primary))]/20 bg-[hsl(var(--primary))]/5 p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Activity className="h-5 w-5 text-[hsl(var(--primary))]" />
+                    <h2 className="text-sm font-semibold text-foreground">Your Habits</h2>
+                  </div>
+                  <HabitTracker employeeId={employee.id} />
+                </div>
+              </TabsContent>
+            )}
 
             {/* Suggestions Tab */}
             <TabsContent value="suggestions" className="space-y-4">
@@ -374,8 +411,26 @@ export function EmployeeDetail({ employee }: { employee: Employee }) {
             </TabsContent>
 
             {/* Notifications Tab */}
-            <TabsContent value="notifications" className="space-y-0">
-              <NotificationRatingsPanel employee={employee} />
+            <TabsContent value="notifications" className="space-y-4">
+              {/* Only show for logged-in employee */}
+              {userId === employee.id && (
+                <>
+                  {/* Alert for Intensive/Critical status */}
+                  {employee.status === "critical" && (
+                    <Alert className="border-red-200 bg-red-50">
+                      <AlertTriangle className="h-5 w-5 text-red-600" />
+                      <span className="text-red-800 font-medium ml-2">
+                        Intensive Alert: Your health status is critical. Please consult a health professional immediately!
+                      </span>
+                    </Alert>
+                  )}
+                  <RatingsContent />
+                </>
+              )}
+              {/* Fallback for other employees */}
+              {userId !== employee.id && (
+                <NotificationRatingsPanel employee={employee} />
+              )}
             </TabsContent>
           </Tabs>
 
