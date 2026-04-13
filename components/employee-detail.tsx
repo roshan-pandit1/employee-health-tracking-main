@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   ArrowLeft,
   Heart,
@@ -31,7 +31,6 @@ import { HabitTracker } from "./habit-tracker"
 import { NotificationRatingsPanel } from "./notification-ratings-panel"
 import { RatingsContent } from "./ratings-content"
 import { Alert } from "@/components/ui/alert"
-import { AlertTriangle } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   LineChart,
